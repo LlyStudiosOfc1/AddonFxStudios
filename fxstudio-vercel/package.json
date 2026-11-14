@@ -1,0 +1,13 @@
+{
+  "name": "fxstudio-vercel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FXStudio - Minecraft Bedrock Particle Portal & Sync API (Vercel Ready)",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

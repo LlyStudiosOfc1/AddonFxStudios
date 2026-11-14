@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FXStudio — Minecraft Bedrock Particle Portal</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <h1>FXStudio</h1>
+      <span class="badge">Bedrock Sync v1</span>
+    </div>
+    <div class="status-group">
+      <span id="storageBadge" class="pill pill-muted">Storage: verificando...</span>
+      <span id="playerBadge" class="pill pill-offline">Minecraft: aguardando vínculo</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Token & API Connection Card -->
+    <section class="card token-card">
+      <div class="card-header">
+        <h2>1. Token & Endpoint do Add-on</h2>
+        <button id="btnNewToken" class="btn btn-primary">+ Gerar Novo Token</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="tokenInput">Token Ativo do Jogador</label>
+          <div class="input-row">
+            <input id="tokenInput" type="text" placeholder="Ex: FX-A1B2-C3D4" />
+            <button id="btnLoadToken" class="btn btn-secondary">Conectar</button>
+            <button id="btnCopyToken" class="btn btn-ghost" title="Copiar Token">Copiar</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="apiUrlInput">URL Base da API (para o config do Add-on)</label>
+          <div class="input-row">
+            <input id="apiUrlInput" type="text" readonly />
+            <button id="btnCopyApi" class="btn btn-ghost">Copiar URL</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace: Editor + Preview -->
+    <div class="workspace">
+      <section class="card">
+        <div class="card-header">
+          <h2 id="editorTitle">2. Criar / Editar Partícula</h2>
+          <button id="btnResetForm" class="btn btn-ghost">Limpar Campos</button>
+        </div>
+
+        <form id="effectForm" class="form-stack">
+          <input type="hidden" id="effectId" />
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="effectName">Nome do Efeito</label>
+              <input id="effectName" type="text" placeholder="Ex: Aura Celestial" required />
+            </div>
+
+            <div class="field">
+              <label for="effectType">Identificador Bedrock</label>
+              <input
+                id="effectType"
+                list="bedrockParticles"
+                type="text"
+                value="minecraft:basic_flame_particle"
+                required
+              />
+              <datalist id="bedrockParticles">
+                <option value="minecraft:basic_flame_particle"></option>
+                <option value="minecraft:soul_particle"></option>
+                <option value="minecraft:endrod"></option>
+                <option value="minecraft:dragon_breath_trail"></option>
+                <option value="minecraft:totem_particle"></option>
+                <option value="minecraft:enchanting_table_particle"></option>
+                <option value="minecraft:heart_particle"></option>
+                <option value="minecraft:critical_hit_emitter"></option>
+              </datalist>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="field">
+              <label>Posição (X, Y, Z)</label>
+              <div class="triple-input">
+                <input id="posX" type="number" step="0.1" value="0" aria-label="Posição X" />
+                <input id="posY" type="number" step="0.1" value="1" aria-label="Posição Y" />
+                <input id="posZ" type="number" step="0.1" value="0" aria-label="Posição Z" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Rotação (Pitch, Yaw, Roll)</label>
+              <div class="triple-input">
+                <input id="rotX" type="number" step="1" value="0" aria-label="Rotação X" />
+                <input id="rotY" type="number" step="1" value="0" aria-label="Rotação Y" />
+                <input id="rotZ" type="number" step="1" value="0" aria-label="Rotação Z" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="effectScale">Escala (Scale)</label>
+              <input id="effectScale" type="number" step="0.1" min="0.1" max="20" value="1.0" />
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="molang-header">
+              <label>Variáveis Molang (<code>molangVars</code>)</label>
+              <button type="button" id="btnAddMolang" class="btn btn-ghost btn-sm">+ Adicionar Variável</button>
+            </div>
+            <div id="molangList" class="molang-list"></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar & Publicar para Sync</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card preview-card">
+        <div class="card-header">
+          <h2>Preview Visual & Payload Sync</h2>
+          <button id="btnTestSync" class="btn btn-secondary btn-sm">Testar /sync</button>
+        </div>
+        <canvas id="particleCanvas" width="460" height="250"></canvas>
+        <div class="code-box">
+          <div class="code-header">
+            <span>JSON retornado ao Minecraft Bedrock</span>
+            <span id="versionLabel">latestVersion: 0</span>
+          </div>
+          <pre id="syncOutput">{ "upserts": [], "deleted": [] }</pre>
+        </div>
+      </section>
+    </div>
+
+    <!-- Active Effects List -->
+    <section class="card">
+      <div class="card-header">
+        <h2>3. Efeitos Sincronizados neste Token</h2>
+        <button id="btnRefreshEffects" class="btn btn-ghost">Atualizar Lista</button>
+      </div>
+      <div id="effectsGrid" class="effects-grid">
+        <p class="muted">Gere ou conecte um token para visualizar os efeitos.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
